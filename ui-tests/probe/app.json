@@ -1,0 +1,8 @@
+{
+    "name": "Probe",
+    "identifier": "com.haylen.probe",
+    "version": "1.0.0",
+    "orientation": "any",
+    "window": {"width": 640, "height": 400},
+    "splash": {"logo": "logo.svg", "background": "#FF20304A"}
+}

@@ -1,0 +1,36 @@
+{
+    "name": "Haylen Runner",
+    "identifier": "com.haylen.runner",
+    "version": "0.0.1",
+    "build": 1,
+    "description": "Runs other Haylen apps from the address of their zip file, a QR code or a link, with hot reload while they are made.",
+    "orientation": "any",
+    "window": {
+        "title": "Haylen Runner",
+        "width": 1100,
+        "height": 760,
+        "resizable": true,
+        "highDpi": true
+    },
+    "design": {
+        "width": 1280,
+        "height": 820,
+        "scaling": "none"
+    },
+    "ui": {
+        "scaleMode": "physical"
+    },
+    "clearColor": "#FF07112F",
+    "splash": {
+        "logo": "logo.png",
+        "background": "#FF07112F"
+    },
+    "plugins": {
+        "qr-scanner": {
+            "parameters": {"cameraUsage": "Haylen Runner reads the address of an app from a QR code."}
+        },
+        "url-scheme": {
+            "parameters": {"scheme": "haylen-runner"}
+        }
+    }
+}

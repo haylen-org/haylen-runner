@@ -1,0 +1,21 @@
+{
+    "id": "qr-scanner",
+    "name": "QR Scanner",
+    "version": "0.0.1",
+    "description": "Reads the text of a QR code with the camera of the device.",
+    "platforms": ["ios", "catalyst", "android"],
+    "requires": [],
+    "permissions": ["camera"],
+    "parameters": {
+        "cameraUsage": {"type": "string", "platforms": ["ios", "catalyst"], "default": "Haylen Runner reads the address of an app from a QR code.", "description": "Text of the camera permission prompt on Apple platforms."}
+    },
+    "apple": {
+        "class": "QrScannerPlugin",
+        "sources": "apple",
+        "frameworks": ["AVFoundation.framework"],
+        "infoPlist": {"NSCameraUsageDescription": "${cameraUsage}"}
+    },
+    "android": {
+        "module": "android"
+    }
+}

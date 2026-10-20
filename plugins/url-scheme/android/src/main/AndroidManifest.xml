@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Joins the link activity of the `haylen-links` library, so links with the `scheme` parameter of the plugin, such as those of a QR code that the camera reads, open the app or reach it while it runs, where the engine publishes them as `linkOpened`. -->
+        <activity
+            android:name="dev.haylen.HaylenLinkActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="${urlScheme}" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

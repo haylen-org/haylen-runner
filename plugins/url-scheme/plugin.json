@@ -1,0 +1,26 @@
+{
+    "id": "url-scheme",
+    "name": "URL Scheme",
+    "version": "0.0.1",
+    "description": "Registers the URL scheme of the app on every platform and hands the app the links of that scheme that open it.",
+    "platforms": ["ios", "catalyst", "tvos", "visionos", "macos", "android", "web", "windows", "linux"],
+    "requires": [],
+    "parameters": {
+        "scheme": {"type": "string", "default": "haylen-runner", "description": "The URL scheme of the links that open the app, such as \"haylen-runner://open?url=...\"."}
+    },
+    "apple": {
+        "infoPlist": {
+            "CFBundleURLTypes": [{"CFBundleURLName": "com.haylen.plugins.url-scheme", "CFBundleURLSchemes": ["${scheme}"]}]
+        }
+    },
+    "android": {
+        "module": "android",
+        "placeholders": {"urlScheme": "${scheme}"}
+    },
+    "web": {
+        "module": "web/url-scheme.js"
+    },
+    "desktop": {
+        "urlSchemes": ["${scheme}"]
+    }
+}
