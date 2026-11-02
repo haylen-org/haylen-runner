@@ -80,11 +80,13 @@ function Home:choose(url)
     self:open(url)
 end
 
+-- Forgets the addresses and deletes the zip files they downloaded.
 function Home:forget()
     for _, url in ipairs(history.list()) do
         history.remove(url)
     end
     self:refresh()
+    scene.spawn(self, download.clear)
 end
 
 -- Downloads the zip file of the address with its progress, keeps the address in the list and launches the app.

@@ -14,6 +14,14 @@ function download.path(url)
     return storage.root() .. '/' .. download.folder .. '/' .. crypto.digest('SHA256', url, 'hex'):sub(1, 16) .. '.zip'
 end
 
+-- Deletes every downloaded zip file. It runs inside a coroutine of `async`, whose await it makes.
+function download.clear()
+    local folder = storage.root() .. '/' .. download.folder
+    if fs.exists(folder) then
+        fs.removeRecursive(folder):await()
+    end
+end
+
 -- Calls `progress(received, total)` as the pieces arrive, with `total` nil when the server does not tell the length, and raises the reason when the download fails.
 function download.fetch(url, progress)
     local chunks, received, total, status = {}, 0, nil, 0
