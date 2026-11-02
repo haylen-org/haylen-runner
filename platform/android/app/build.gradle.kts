@@ -13,13 +13,13 @@ fun haylenEntries(key: String): List<Pair<String, String>> = haylen.getProperty(
 // The values of a signing key, each with the suffix of its environment variable.
 val keyValues = mapOf("storeFile" to "STORE_FILE", "storePassword" to "STORE_PASSWORD", "keyAlias" to "KEY_ALIAS", "keyPassword" to "KEY_PASSWORD")
 
-// Reads the key of a build type that `haylen.py android-key` writes into `keystore/` with its `<type>.properties`, or else the one that continuous integration gives through the Gradle properties `haylen.<type>.<value>` or the environment variables `HAYLEN_<TYPE>_<VALUE>`, with the keystore as an absolute path.
+// Reads the key of a build type that `haylen.py distribution android-key` writes into `keystore/` with its `<type>.properties`, or else the one that continuous integration gives through the Gradle properties `haylen.<type>.<value>` or the environment variables `HAYLEN_<TYPE>_<VALUE>`, with the keystore as an absolute path.
 fun haylenKey(type: String): Map<String, String>? {
     val keystore = rootProject.layout.projectDirectory.dir("keystore")
     val own = providers.fileContents(keystore.file("$type.properties")).asText.orNull
     if (own != null) {
         val values = Properties().apply { load(own.reader()) }
-        val key = keyValues.keys.associateWith { values.getProperty(it) ?: throw GradleException("The file keystore/$type.properties has no \"$it\". Create the key again with \"haylen android-key\" and the app folder.") }
+        val key = keyValues.keys.associateWith { values.getProperty(it) ?: throw GradleException("The file keystore/$type.properties has no \"$it\". Create the key again with \"haylen distribution android-key\" and the app folder.") }
         return key + ("storeFile" to keystore.file(key.getValue("storeFile")).asFile.path)
     }
     val given = keyValues.mapValues { (name, variable) -> providers.gradleProperty("haylen.$type.$name").orElse(providers.environmentVariable("HAYLEN_${type.uppercase()}_$variable")).orNull }
@@ -59,6 +59,9 @@ android {
         jniLibs.directories.add("../haylen/jniLibs")
     }
 
+    // The asset packs that hold the shards of a protected release too large for the base module install with the app.
+    assetPacks += haylenEntries("assetPacks").map { ":${it.first}" }
+
     // The shards of a protected release stay uncompressed in the APK, so the runtime reads their ranges in place.
     androidResources {
         noCompress += "hpak"
@@ -69,6 +72,15 @@ android {
         packaging {
             jniLibs {
                 excludes += "lib/*/libhaylen.so"
+            }
+        }
+    }
+
+    // A debug build for one device packs only the native libraries of its ABI, which `haylen.py run` names with the Gradle property `haylen.abi`, so it builds, copies and installs faster.
+    providers.gradleProperty("haylen.abi").orNull?.let { abi ->
+        buildTypes.getByName("debug") {
+            ndk {
+                abiFilters += abi
             }
         }
     }
@@ -86,8 +98,10 @@ android {
     }
 
     buildTypes {
+        // A release keeps only the code and the resources that the app reaches, which R8 finds from the manifest, the layouts and the code.
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
             signingConfig = signingConfigs.findByName("release")
         }
@@ -116,6 +130,6 @@ if (haylen.getProperty("library") == "haylen") {
 
 // A release build without the upload key stops with the way to add it.
 if ("release" !in haylenKeys) {
-    val missing = "The release build needs the upload key of the app. Create it with \"haylen android-key\" and the app folder, or give the Gradle properties \"haylen.release.storeFile\", \"haylen.release.storePassword\", \"haylen.release.keyAlias\" and \"haylen.release.keyPassword\", or the environment variables \"HAYLEN_RELEASE_STORE_FILE\", \"HAYLEN_RELEASE_STORE_PASSWORD\", \"HAYLEN_RELEASE_KEY_ALIAS\" and \"HAYLEN_RELEASE_KEY_PASSWORD\"."
+    val missing = "The release build needs the upload key of the app. Create it with \"haylen distribution android-key\" and the app folder, or give the Gradle properties \"haylen.release.storeFile\", \"haylen.release.storePassword\", \"haylen.release.keyAlias\" and \"haylen.release.keyPassword\", or the environment variables \"HAYLEN_RELEASE_STORE_FILE\", \"HAYLEN_RELEASE_STORE_PASSWORD\", \"HAYLEN_RELEASE_KEY_ALIAS\" and \"HAYLEN_RELEASE_KEY_PASSWORD\"."
     tasks.named { it.startsWith("pre") && it.endsWith("ReleaseBuild") }.configureEach { doFirst { throw GradleException(missing) } }
 }
