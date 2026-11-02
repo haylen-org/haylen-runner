@@ -41,6 +41,7 @@ The folders `platform/*/haylen/`, which `haylen.py` writes on every build, and t
 ## Platform projects
 
 - The projects of `platform/` belong to the runner and follow the templates of Haylen: `templates/lua/platform/apple` and `templates/common/platform/android`. The command `haylen platform diff . apple` (or `android`) compares them, and a change of a template reaches them by bringing its files over, keeping only what the runner changes on purpose.
+- The runner reaches development servers on the local network, which often serve plain HTTP, so its projects differ from the templates on purpose there: the Android manifest allows cleartext traffic and declares `ACCESS_LOCAL_NETWORK`, which Android 17 and later require for addresses of the local network, and the `Info.plist` of iOS and tvOS allows local networking through App Transport Security and explains the access in `NSLocalNetworkUsageDescription`.
 - After editing `platform/apple/project.yml`, run `haylen platform xcodegen .` and commit `project.yml` with the generated `App.xcodeproj`.
 - The runner has no project for the web, Windows or Linux, so `haylen.py` builds those from copies of the templates.
 
