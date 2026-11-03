@@ -22,32 +22,21 @@ function download.clear()
     end
 end
 
--- Calls `progress(received, total)` as the pieces arrive, with `total` nil when the server does not tell the length, and raises the reason when the download fails.
+-- Writes the file as its pieces arrive, calling `progress(received, total)` with `total` nil when the server does not tell the length, and raises the reason when the download fails. The file of the address changes only once the new one is whole, and a download that fails or whose task ends leaves no piece of a file behind.
 function download.fetch(url, progress)
-    local chunks, received, total, status = {}, 0, nil, 0
-    local _, failure = http.client.stream({
+    local scope <close> = http.client.controller()
+    local done, failure = http.client.download({
         url = url,
+        path = download.path(url),
         timeoutSeconds = 600,
         maxResponseBytes = download.limit,
-        onResponse = function(code, headers)
-            status = code
-            total = tonumber(headers['content-length'])
-        end,
-    }, function(chunk)
-        chunks[#chunks + 1] = chunk
-        received = received + #chunk
-        progress(received, total)
-    end):await()
-    if failure then
+        controller = scope,
+        onProgress = progress,
+    }):await()
+    if not done then
         error(string.format('The download of "%s" failed: %s', url, tostring(failure)), 0)
     end
-    if status >= 400 then
-        error(string.format('The server answered %d for "%s".', status, url), 0)
-    end
-    local path = download.path(url)
-    fs.mkdir(storage.root() .. '/' .. download.folder):await()
-    fs.writeFile(path, table.concat(chunks)):await()
-    return path
+    return done.path
 end
 
 return download
